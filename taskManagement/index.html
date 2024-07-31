@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <label for="task">Task:</label>
+    <br>
+    <input type="text" id="task">
+    <br>
+    <label for='description'>Description:</label>
+    <br>
+    <input type="text" id="description">
+    <br>
+    <button id="submit">Submit</button>
+    <br>
+    <button id="getTasks">Get Tasks</button>
+
+
+    <div id="output"></div>
+
+    <script>
+        const output = document.getElementById('output');
+
+        function getTasks() {
+            // clear inputs:
+            document.getElementById('task').value = '';
+            document.getElementById('description').value = '';
+            
+            // clear the output div:
+            output.innerHTML = '';
+            fetch('http://localhost:3000/tasks/',{
+                headers: {
+                    'auth': 123
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // loop through data and render an unordered list:
+                    let ul = document.createElement('ul');
+                    data.data.forEach(task => {
+                        let li = document.createElement('li');
+                        li.textContent = `${task.title} - ${task.description}`;
+                        //  in order to be able to delete tasks, I need to add
+                        // a delete button to each task,
+                        // and I need to add an event listener to each button
+                        // that will have a reference to the id of the task to delete
+                        let deleteButton = document.createElement('button');
+                        deleteButton.textContent = 'Delete';
+                        deleteButton.addEventListener('click', () => {
+                            fetch(`http://localhost:3000/tasks/${task.id}`, {
+                                    method: 'DELETE',
+                                    headers: {
+                                        'auth': 123
+                                    }
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    console.log(data);
+                                    getTasks();
+                                })
+                        })
+                        li.appendChild(deleteButton);
+                        ul.appendChild(li);
+
+                        // updating functionality:
+                        let updateButton = document.createElement('button');
+                        updateButton.textContent = 'Update';
+
+                        updateButton.addEventListener('click', () => {
+                            const newTitle = prompt('Enter new title');
+                            const newDescription = prompt('Enter new description');
+                            fetch(`http://localhost:3000/tasks/${task.id}`, {
+                                    method: 'PUT',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'auth': 123
+                                    },
+                                    body: JSON.stringify({
+                                        title: newTitle,
+                                        description: newDescription
+                                    })
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    console.log(data);
+                                    getTasks();
+                                })
+                        })
+                        li.appendChild(updateButton);
+                    })
+                    output.appendChild(ul);
+                })
+        }
+
+        getTasks();
+
+        // get button:
+        const getTasksButton = document.getElementById('getTasks');
+        getTasksButton.addEventListener('click', getTasks);
+
+        // submit button:
+        const submitButton = document.getElementById('submit');
+        submitButton.addEventListener('click', () => {
+            const task = document.getElementById('task').value;
+            const description = document.getElementById('description').value;
+            fetch('http://localhost:3000/tasks/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'auth': 123
+                    },
+                    body: JSON.stringify({
+                        title: task,
+                        description: description
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    getTasks();
+                })
+        })
+
+
+    </script>
+</body>
+
+</html>
