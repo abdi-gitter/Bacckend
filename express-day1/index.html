@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        // we'll have a query parameter called "name" in the URL
+        // We'll get this name and append it to an h1 tag and 
+        // append this h1 tag to the body of the document
+
+        // get the query parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        // this looks like: site.com?name="John"
+
+        // get the value of the query parameter
+        const name = urlParams.get('name');
+
+        // create an h1 tag
+        const h1 = document.createElement('h1');
+        // set the text of the h1 tag to the name
+        h1.innerText = name;
+
+        // append the h1 tag to the body of the document
+        document.body.appendChild(h1);
+    </script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <ul id="users">
+
+    </ul>
+
+    <!-- form to add a user with name and age -->
+    <form id="addUser">
+        <input type="text" id="name" placeholder="Name">
+        <input type="number" id="age" placeholder="Age">
+        <button type="submit">Add User</button>
+    </form>
+
+    <script>
+        // Initially, load the users from the API:
+        fetch('http://localhost:3000/users')
+            .then(response => response.json())
+            .then(users => {
+                users.forEach(user => createUser(user));
+            });
+
+        // ADD A USER:
+        // Reference the form element so that on submit, I can execute a function to add a user:
+        const form = document.getElementById('addUser');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            console.log("form submitted")
+
+            // get the name and age from the form input elements:
+            const name = document.getElementById('name').value;
+            const age = document.getElementById('age').value;
+
+            // Send these values to the API:
+            fetch('http://localhost:3000/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name,
+                    age
+                })
+            })
+                .then(response => response.json())
+                .then(user => {
+                    createUser(user);
+                    // clear input fields:
+                    document.getElementById('name').value = '';
+                    document.getElementById('age').value = '';
+                    // refresh page:
+                    location.reload();
+                })
+        })
+
+
+        const createUser = (user) => {
+            const usersList = document.getElementById('users');
+            const li = document.createElement('li');
+            li.innerText = `${user.name} is ${user.age} years old`;
+            // button to delete users:
+            const button = document.createElement('button');
+            button.innerText = 'Delete';
+            button.onclick = () => {
+                fetch(`http://localhost:3000/users/${user.id}`, {
+                    method: 'DELETE'
+                })
+                    .then(() => {
+                        li.remove();
+                    });
+            };
+            li.appendChild(button);
+
+            // Button to update users, this will open a prompt to update the user's name, then another prompt
+            // to update the user's age.
+            const updateButton = document.createElement('button');
+            updateButton.innerText = 'Update';
+            updateButton.onclick = () => {
+                const name = prompt('Enter the new name');
+                const age = prompt('Enter the new age');
+                fetch(`http://localhost:3000/users/${user.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name,
+                        age
+                    })
+                })
+                    .then(response => response.json())
+                    .then(updatedUser => {
+                        li.innerText = `${updatedUser.name} is ${updatedUser.age} years old`;
+                        li.appendChild(button);
+                        li.appendChild(updateButton);
+                    });
+            };
+            // if we click a user, let's ALERT the users data, by fetching that users's name and age from the /users/:id endpoint:
+            li.onclick = () => {
+                fetch(`http://localhost:3000/users/${user.id}`)
+                    .then(response => response.json())
+                    .then(user => {
+                        alert(`${user.name} is ${user.age} years old`);
+                    });
+            };
+            // change the li so that on hover, the background color changes to lightgray and the cursor is pointer:
+            li.style.cursor = 'pointer';
+            li.style.transition = 'background-color 0.5s';
+            li.onmouseover = () => {
+                li.style.backgroundColor = 'lightgray';
+            };
+            li.onmouseout = () => {
+                li.style.backgroundColor = 'white';
+            };
+            li.appendChild(updateButton);
+
+            
+            usersList.appendChild(li);
+        }
+    </script>
+</body>
+
+</html>
