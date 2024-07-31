@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <input type="text" id="userName">
+    <button id="search">Search for user POST</button>
+    <button id="searchParam">Search for user PARAM</button>
+    <br>
+    <button id="list">List all users</button>
+    <h1></h1>
+
+    <ul id="users"></ul>
+    <script>
+
+        document.querySelector('#search').addEventListener('click', () => {
+            const user = document.querySelector('#userName').value;
+            console.log(user)
+            getUser(user);
+        });
+
+        function getUser(user) {
+            // if we wanted to search for a user, we shouldn't use the body, we should use the query string
+            // or URL parameters. This is because the body is used to send data to the server,
+            //  not to get data from the server.
+            fetch('http://127.0.0.1:8000/users', { // Updated URL to include /users endpoint
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    user
+                })
+            })
+                .then(response => response.json()) // Added to parse JSON response
+                .then(data => {
+                    console.log(data);
+                    if (data === true) {
+                        document.querySelector('h1').textContent += `${user} \n`;
+                    } else {
+                        document.querySelector('h1').textContent += user + ' not found. \n';
+                    }
+                })
+                .catch(error => {
+                    document.querySelector('h1').textContent = error.message;
+                });
+        }
+
+        function getUserParam(user) {
+            fetch(`http://127.0.0.1:8000/users/${user}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    if (data === true) {
+                        document.querySelector('h1').textContent += `${user} \n`;
+                    } else {
+                        document.querySelector('h1').textContent += user + ' not found. \n';
+                    }
+                })
+                .catch(error => {
+                    document.querySelector('h1').textContent = error.message;
+                });
+        }
+
+        document.querySelector('#searchParam').addEventListener('click', () => {
+            const user = document.querySelector('#userName').value;
+            console.log(user)
+            getUserParam(user);
+        });
+
+        function listUsers(){
+            fetch('http://127.0.0.1:8000/users?name=jim')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                const users = data;
+                const ul = document.querySelector('#users');
+                users.forEach(user => {
+                    const li = document.createElement('li');
+                    li.textContent = user;
+                    ul.appendChild(li);
+                });
+            })
+        }
+
+        // add the event listener to call the listUsers function
+        // when the button is clicked
+        document.querySelector('#list').addEventListener('click', listUsers);
+    </script>
+</body>
+
+</html>
