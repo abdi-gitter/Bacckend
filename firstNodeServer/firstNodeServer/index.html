@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <h1>USER DATA:</h1>
+    <ul id="userList">
+
+    </ul>
+
+    <label for="name">Name:</label>
+    <input type="text" id="name">
+    <br>
+    <label for="age">Age:</label>
+    <input type="number" id="age">
+    <br>
+    <button id="button">add user</button>
+
+
+    <script>
+        fetch('http://localhost:3000/')
+            .then(response => response.json())
+            .then(data =>
+                // loop through data, and display each item in user list
+                data.forEach(user => {
+                    const li = document.createElement('li')
+                    li.textContent = user.name + ' - ' + user.age
+                    document.getElementById('userList').appendChild(li)
+                })
+            )
+
+        // adding a user - POST request
+        // How the request object starts it's life
+        const btn = document.getElementById('button')
+        btn.addEventListener('click', (e) => {
+            const name = document.getElementById('name').value;
+            const age = document.getElementById('age').value;
+
+            fetch('http://localhost:3000/', {
+                method: 'POST',
+                // Headers are additional information about our request
+                // In this case, we're telling the server that we're sending JSON data
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, age: Number(age) }),
+            })
+                .then(response => {
+                    if (response.ok && response.status === 200) {
+                        console.log("response is ok")
+                        console.log(response)
+                        return response.json(); // Only parse as JSON if response is OK and not empty
+                    }
+                    throw new Error('Response not OK or empty.');
+                })
+                .then(data => {
+                    console.log((data))
+                    // Assuming the server sends back the added user data
+                    // Update the UI with the new user
+                    const li = document.createElement('li');
+                    li.textContent = data.name + ' - ' + data.age; // This line assumes the server responds with the user object
+                    document.getElementById('userList').appendChild(li);
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+
+</html>
